@@ -64,8 +64,10 @@ def eff():
     _clear()
     validate_phrase(wordlist_trim)
     store_passphrase(wordlist_trim)
-    time.sleep(0.5)
+    time.sleep(1)
     gpg_encrypt(wordlist_trim)
+    time.sleep(1)
+    shred_cache()
     
 #Validate passphrase
 def validate_phrase(passphrase):
@@ -85,15 +87,31 @@ def validate_phrase(passphrase):
 
 # store phrase to file        
 def store_passphrase(pphrase):
-    store = open('file', 'w')
+    store = open('frost', 'w')
     try:
         store.write(f'{pphrase}')
     except:
         print(Fore.BLUE+ 'Error store_passphrase')
     finally:
-        print(Fore.BLUE+ f'write files closed ...')
-        shredin
+        print(Fore.BLUE+ f'\nstore files closed ...')
+        print(Fore.RESET)
         store.close()
+
+# shred unnecessary file     
+def shred_cache():
+    try:
+        # shred forst
+        print(Fore.YELLOW+ '\nShred unnecessary file\n')
+        shred = ['shred','-vuz','-n','10','frost', 'secret.gpg']
+        shred_run = subprocess.Popen(shred, stdout = subprocess.PIPE)
+        shred_stdin = str(shred_run.communicate())
+        print(Fore.YELLOW+ f'{shred_stdin}')
+        
+    except:
+        print(Fore.RED+ 'Shred ERROR')
+    finally:
+        print(Fore.GREEN+ 'Shred succeed')
+    
 
 def gpg_encrypt(passphrase):
     cmd = ['gpg']
@@ -109,11 +127,27 @@ def gpg_encrypt(passphrase):
     cmd.append('--cipher-algo')
     cmd.append('AES256')
     cmd.append('--armor')
-    cmd.append('file')
+    cmd.append('frost')
     cmd_run = subprocess.Popen(cmd, stdout = subprocess.PIPE)
     cmd_str = str(cmd_run.communicate())
-    print(cmd_str)
-
+    time.sleep(1)
+    print(Fore.YELLOW+ 'encrypting passphare')
+    for i in range(0, 5):
+        time.sleep(0.5)
+        print('*', end='', flush=True)
+        
+    print(Fore.GREEN+ f'\n{cmd_str}')
+    print(Fore.WHITE+ '\n* gpg_encrypt succeed\n')
+    
+    read = open('secret.gpg','r')
+    try:
+        for line in read:
+            print(line, end='')
+    except:
+        print('ERROR open secret.gpg')
+    finally:
+        read.close()
+        
 #Clear Screen
 def _clear():
     _ = subprocess.call('clear' if os.name == 'posix' else 'cls')
