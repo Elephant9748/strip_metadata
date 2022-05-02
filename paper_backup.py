@@ -94,31 +94,9 @@ def store_passphrase(pphrase):
         print(Fore.BLUE+ f'write files closed ...')
         shredin
         store.close()
-        
-        
-
-# GPG symmetric AES256 encrypt
-# echo 'secret' | gpg  --yes --batch --passphrase-fd 0 --symmetric --s2k-mode 3 
-# --s2k-count 65011712 --s2k-digest-algo SHA512 --cipher-algo AES256 --armor <<< text-encrypted-here.......
 
 def gpg_encrypt(passphrase):
-    # AES_passphrase = str(input(Fore.RESET+Back.RESET+ f'Input Passphrase on images file: '))
-    # cmd = ['gpg','--yes','--batch','--passphrase-fd 0','--symmetric',
-    #        '--s2k-mode 3','--s2k-count 65011712','--s2k-digest-algo SHA512','--cipher-algo AES256',
-    #        f'--armor ','<<<',f'{passphrase}']
-    # cmd_str = f'echo \'{AES_passphrase}\' | gpg  --yes --batch --passphrase-fd 0 --symmetric --s2k-mode 3 --s2k-count 65011712 --s2k-digest-algo SHA512 --cipher-algo AES256 --armor <<< {passphrase}'
-    
-    # pipe to file
-    # cmd = ['bash']
-    # cmd = ['echo']
-    # cmd.append(f' \"{passphrase}\"')
-    # cmd.append('|')
-    # cmd.append('gpg')
     cmd = ['gpg']
-    # cmd.append('--yes')
-    # cmd.append('--batch')
-    # cmd.append('--passphrase-fd')
-    # cmd.append('0')
     cmd.append('-o')
     cmd.append('secret.gpg')
     cmd.append('--symmetric')
@@ -132,21 +110,9 @@ def gpg_encrypt(passphrase):
     cmd.append('AES256')
     cmd.append('--armor')
     cmd.append('file')
-    # cmd.append('<<<')
-    # cmd.append(f'"{passphrase}"')
-    # cmd_run = subprocess.run(cmd, capture_output = True)
-    # print(cmd_run)
     cmd_run = subprocess.Popen(cmd, stdout = subprocess.PIPE)
     cmd_str = str(cmd_run.communicate())
     print(cmd_str)
-    
-    # data, temp = os.pipe()
-    
-    # os.write(temp, bytes('5 10\n','utf-8'))
-    # os.close(temp)
-    # s = subprocess.check_output(cmd_str, stdin = data, shell = True)
-    # print(s.decode('utf-8'))
-
 
 #Clear Screen
 def _clear():
