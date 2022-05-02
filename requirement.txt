@@ -1,0 +1,5 @@
+###### Requirements  ######
+progressbar
+colorama
+mnemonic
+argparse
