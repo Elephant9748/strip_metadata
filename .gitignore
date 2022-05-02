@@ -8,9 +8,9 @@ __pycache__/
 *.
 
 # dir
-img/ori/
-img/ori-BK/
-img/out/
+img/ori/*
+img/ori-BK/*
+img/out/*
 
 # file
 secret.gpg
