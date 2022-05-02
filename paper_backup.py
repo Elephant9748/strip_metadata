@@ -13,6 +13,7 @@ import argparse
 import time
 import subprocess
 import os
+import hashlib
 from mnemonic import Mnemonic
 from sys import exit
 from colorama import Fore, Back
@@ -101,7 +102,8 @@ def store_passphrase(pphrase):
 def shred_cache():
     try:
         # shred forst
-        print(Fore.YELLOW+ '\nShred unnecessary file\n')
+        print(Fore.BLUE+ 'Shred unnecessary file')
+        print(Fore.RED)
         shred = ['shred','-vuz','-n','10','frost', 'secret.gpg']
         shred_run = subprocess.Popen(shred, stdout = subprocess.PIPE)
         shred_stdin = str(shred_run.communicate())
@@ -112,8 +114,28 @@ def shred_cache():
     finally:
         print(Fore.GREEN+ 'Shred succeed')
     
+# hash encrypted passphrase
+def hash_me(hash_target):
+    hash_target_str = ''
+    for line in hash_target:
+        hash_target_str += line
+    
+    hash = hashlib.sha256()
+    target = hash_target_str.encode()
+    hash.update(target)
+    # long hash
+    long_hash = hash.hexdigest()
+    print(Fore.RESET+ f'\nLong hash sha256: {long_hash}')
+    # short has
+    short_str = ''
+    for i in range(0, len(long_hash) - 1):
+        short_str += long_hash[i]
+        if i == 14:
+            break;
+    print(f'Short hash sha256: {short_str}')
 
 def gpg_encrypt(passphrase):
+    print(Fore.YELLOW+ 'encrypting passphare')
     cmd = ['gpg']
     cmd.append('-o')
     cmd.append('secret.gpg')
@@ -130,22 +152,25 @@ def gpg_encrypt(passphrase):
     cmd.append('frost')
     cmd_run = subprocess.Popen(cmd, stdout = subprocess.PIPE)
     cmd_str = str(cmd_run.communicate())
-    time.sleep(1)
-    print(Fore.YELLOW+ 'encrypting passphare')
+    
     for i in range(0, 5):
         time.sleep(0.5)
         print('*', end='', flush=True)
         
-    print(Fore.GREEN+ f'\n{cmd_str}')
-    print(Fore.WHITE+ '\n* gpg_encrypt succeed\n')
+    print(Fore.YELLOW+ f'\n{cmd_str}')
     
     read = open('secret.gpg','r')
+    lines = read.readlines()
+    print(Fore.GREEN)
     try:
-        for line in read:
-            print(line, end='')
+        for line in lines:
+            print(line, end='', flush=True)
     except:
         print('ERROR open secret.gpg')
     finally:
+        # hashing secret.gpg
+        hash_me(lines)
+        print(Fore.BLUE+ '\ngpg_encrypt succeed\n')
         read.close()
         
 #Clear Screen
