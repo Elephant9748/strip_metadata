@@ -3,3 +3,4 @@ progressbar
 colorama
 mnemonic
 argparse
+climage

@@ -14,6 +14,9 @@ import time
 import subprocess
 import os
 import hashlib
+import io
+import qrcode
+import climage
 from mnemonic import Mnemonic
 from sys import exit
 from colorama import Fore, Back
@@ -69,6 +72,7 @@ def eff():
     gpg_encrypt(wordlist_trim)
     time.sleep(1)
     shred_cache()
+    qr_code()
     
 #Validate passphrase
 def validate_phrase(passphrase):
@@ -133,6 +137,45 @@ def hash_me(hash_target):
         if i == 14:
             break;
     print(f'Short hash sha256: {short_str}')
+    
+    global short_hashing
+    global long_hashing
+    global hashing_str
+    
+    short_hashing = short_str
+    long_hashing = long_hash
+    hashing_str = hash_target_str
+    
+# qr-code
+def qr_code():
+    qr = qrcode.QRCode(
+        version=1,
+        error_correction=qrcode.constants.ERROR_CORRECT_L,
+        box_size=10,
+        border=4,
+    )
+    qr.add_data(hashing_str)
+    qr.make(fit=True)
+    # qr.make(hashing_str)
+    img = qr.make_image(fill_color='black', back_color='white')
+    # img = qr.make_image()
+    img.save(f'qrcode/{short_hashing}-date.png')
+    print(Fore.YELLOW+ f'\nImage Path: qrcode/{short_hashing}-date.png')
+    
+    # # qrcode ascii 
+    # f = io.StringIO()
+    # qr.print_ascii(out=f)
+    # f.seek(0)
+    # # print(Fore.RESET)
+    # # for line in f:
+    # #     print(line, end='', flush=True)
+    # print(Fore.RED+ f.read())
+    
+    # climage
+    out_image = climage.convert(f'qrcode/{short_hashing}-date.png', is_unicode=True, is_truecolor=False, is_256color=True, is_16color=False, is_8color=False, width=80, palette="default")
+    
+    print(out_image)
+
 
 def gpg_encrypt(passphrase):
     print(Fore.YELLOW+ 'encrypting passphare')
