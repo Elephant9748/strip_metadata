@@ -17,6 +17,7 @@ import hashlib
 import io
 import qrcode
 import climage
+import datetime
 from mnemonic import Mnemonic
 from sys import exit
 from colorama import Fore, Back
@@ -73,6 +74,7 @@ def eff():
     time.sleep(1)
     shred_cache()
     qr_code()
+    qr_code_short_hash()
     
 #Validate passphrase
 def validate_phrase(passphrase):
@@ -134,7 +136,7 @@ def hash_me(hash_target):
     short_str = ''
     for i in range(0, len(long_hash) - 1):
         short_str += long_hash[i]
-        if i == 14:
+        if i == 21:
             break;
     print(f'Short hash sha256: {short_str}')
     
@@ -145,9 +147,45 @@ def hash_me(hash_target):
     short_hashing = short_str
     long_hashing = long_hash
     hashing_str = hash_target_str
+
+# qr_code include short hash
+def qr_code_short_hash():
+    # convert "qrcode/d44b4532e3f13bf9808d0f-date.png" -gravity center -scale 200% -extent 110% -scale 110% -gravity south -font /usr/share/fonts/truetype/noto/NotoMono-Regular.ttf -pointsize 48 -fill black -draw "text 0,50 'd44b4532e3f13bf9808d0f'" "qrcode/d44b4532e3f13bf9808d0f-date-by-convert.png"
+    
+    # short hash image
+    print(Fore.BLUE+'\n*short hash qrcode. \n')
+    
+    convert_list = ['convert',
+     f"qrcode/{long_hashing}-{current_time}-{name_image}.png",
+     '-gravity','center','-scale','200%',
+     '-extent','110%','-scale','110%',
+     '-gravity','south',
+     '-font','/usr/share/fonts/truetype/noto/NotoMono-Regular.ttf',
+     '-pointsize',' 48','-fill','black',
+     '-draw',f"text 0,50 '{short_hashing}'",
+     f'qrcode/{short_hashing}-{current_time}-{name_image}.png']
+    
+    convert_sub = subprocess.Popen(convert_list, stdout = subprocess.PIPE)
+    pipe_str = str(convert_sub.communicate())
+    print(pipe_str)
+    print(Fore.YELLOW+ f'\nImage Path: qrcode/{short_hashing}-{current_time}-{name_image}.png')
+    print(Fore.GREEN+ 'qr_code_short_hash succeed.')
     
 # qr-code
 def qr_code():
+    
+    global current_time 
+    global name_image
+    current_time = str(datetime.date.today())
+    
+    check = 0
+    while check != 1:
+        name_image = str(input(f'\ngive name to image: '))
+        if name_image == '':
+            check = 0
+        else:
+            check = 1
+    
     qr = qrcode.QRCode(
         version=1,
         error_correction=qrcode.constants.ERROR_CORRECT_L,
@@ -159,8 +197,7 @@ def qr_code():
     # qr.make(hashing_str)
     img = qr.make_image(fill_color='black', back_color='white')
     # img = qr.make_image()
-    img.save(f'qrcode/{short_hashing}-date.png')
-    print(Fore.YELLOW+ f'\nImage Path: qrcode/{short_hashing}-date.png')
+    img.save(f'qrcode/{long_hashing}-{current_time}-{name_image}.png')
     
     # # qrcode ascii 
     # f = io.StringIO()
@@ -172,9 +209,11 @@ def qr_code():
     # print(Fore.RED+ f.read())
     
     # climage
-    out_image = climage.convert(f'qrcode/{short_hashing}-date.png', is_unicode=True, is_truecolor=False, is_256color=True, is_16color=False, is_8color=False, width=80, palette="default")
+    out_image = climage.convert(f'qrcode/{long_hashing}-{current_time}-{name_image}.png', is_unicode=True, is_truecolor=False, is_256color=True, is_16color=False, is_8color=False, width=80, palette="default")
     
     print(out_image)
+    print(Fore.YELLOW+ f'\nImage Path: qrcode/{long_hashing}-{current_time}-{name_image}.png')
+    print(Fore.GREEN+ 'qr_code_hash succeed.')
 
 
 def gpg_encrypt(passphrase):

@@ -11,6 +11,7 @@ __pycache__/
 img/ori/*
 img/ori-BK/*
 img/out/*
+qrcode/*
 
 # file
 secret.gpg
