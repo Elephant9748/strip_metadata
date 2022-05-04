@@ -69,9 +69,9 @@ def eff():
     _clear()
     validate_phrase(wordlist_trim)
     store_passphrase(wordlist_trim)
-    time.sleep(1)
+    time.sleep(0.5)
     gpg_encrypt(wordlist_trim)
-    time.sleep(1)
+    time.sleep(0.5)
     shred_cache()
     qr_code()
     qr_code_short_hash()
@@ -120,25 +120,27 @@ def shred_cache():
     finally:
         print(Fore.GREEN+ 'Shred succeed')
     
-# hash encrypted passphrase
+# hash passphrase
 def hash_me(hash_target):
     hash_target_str = ''
     for line in hash_target:
         hash_target_str += line
     
     hash = hashlib.sha256()
-    target = hash_target_str.encode()
-    hash.update(target)
+    target = hash_target_str.strip()
+    target2 = hash_target_str.encode()
+    hash.update(target2)
+    
     # long hash
     long_hash = hash.hexdigest()
-    print(Fore.RESET+ f'\nLong hash sha256: {long_hash}')
+    print(Fore.RESET+ f'\nLong sha256: {long_hash}')
     # short has
     short_str = ''
     for i in range(0, len(long_hash) - 1):
         short_str += long_hash[i]
         if i == 21:
             break;
-    print(f'Short hash sha256: {short_str}')
+    print(f'Short sha256: {short_str}')
     
     global short_hashing
     global long_hashing
@@ -150,8 +152,6 @@ def hash_me(hash_target):
 
 # qr_code include short hash
 def qr_code_short_hash():
-    # convert "qrcode/d44b4532e3f13bf9808d0f-date.png" -gravity center -scale 200% -extent 110% -scale 110% -gravity south -font /usr/share/fonts/truetype/noto/NotoMono-Regular.ttf -pointsize 48 -fill black -draw "text 0,50 'd44b4532e3f13bf9808d0f'" "qrcode/d44b4532e3f13bf9808d0f-date-by-convert.png"
-    
     # short hash image
     print(Fore.BLUE+'\n*short hash qrcode. \n')
     
@@ -167,7 +167,7 @@ def qr_code_short_hash():
     
     convert_sub = subprocess.Popen(convert_list, stdout = subprocess.PIPE)
     pipe_str = str(convert_sub.communicate())
-    print(pipe_str)
+    print(Fore.RESET+ pipe_str)
     print(Fore.YELLOW+ f'\nImage Path: qrcode/{short_hashing}-{current_time}-{name_image}.png')
     print(Fore.GREEN+ 'qr_code_short_hash succeed.')
     
@@ -237,7 +237,7 @@ def gpg_encrypt(passphrase):
     
     for i in range(0, 5):
         time.sleep(0.5)
-        print('*', end='', flush=True)
+        print('****', end='', flush=True)
         
     print(Fore.YELLOW+ f'\n{cmd_str}')
     
@@ -258,13 +258,60 @@ def gpg_encrypt(passphrase):
 #Clear Screen
 def _clear():
     _ = subprocess.call('clear' if os.name == 'posix' else 'cls')
+    
 
+# hash qrcode check
+def hash_qrcode(target):
+    target.pop(-1)
+    target.pop(-1)
+    str = ''
+    for line in target:
+        if line == '':
+            str += f'\n'
+        else:
+            str += f'{line}\n'
+            
+    hash_qrcode = hashlib.sha256()
+    update_hash = str.strip()
+    update_hash2 = str.encode()
+    hash_qrcode.update(update_hash2)
+
+    # long hash
+    long_hash = hash_qrcode.hexdigest()
+    print(Fore.RESET+ f'\nLong sha256: {long_hash}')
+    # short has
+    short_str = ''
+    for i in range(0, len(long_hash) - 1):
+        short_str += long_hash[i]
+        if i == 21:
+            break;
+    print(f'Short sha256: {short_str}')
+
+# decrypt qrcode
+def decrypt_qrcode():
+    
+    trg_img = 'qrcode/34767856b852770f29baab-2022-05-04-eagle.png'
+    zbarimg_cmd = ['zbarimg','--nodisplay','--nodbus','--quiet',f'{trg_img}']
+    zbarimg_sub = subprocess.Popen(zbarimg_cmd, stdout = subprocess.PIPE)
+    zbarimg_str = str(zbarimg_sub.communicate())
+    get_gpg = zbarimg_str.replace('(b\'QR-Code:','').replace('\', None)','').split('\\n')
+    
+    check = len(get_gpg) - 2
+    for line in range(0, len(get_gpg) - 1):
+        print(Fore.GREEN+ f'{get_gpg[line]}')
+        if line == check:
+            break
+        
+    # hash qrcode (just get the hash, manual checking)
+    hash_qrcode(get_gpg)
+    
 # Initialize parser
 parser = argparse.ArgumentParser()
  
 # Adding optional argument
 parser.add_argument('-B', '--BIP39', action='store_true', help = 'Wordlist Mnemonic BIP 39')
 parser.add_argument('-E', '--EFF', action='store_true', help = 'Wordlist passphraseme')
+parser.add_argument('-D', '--decrypt', action='store_true', help = 'Decrypt qrcode, etc')
  
 # Read arguments from command line
 args = parser.parse_args()
@@ -275,6 +322,8 @@ if args.BIP39:
 elif args.EFF:
     # print(f'Wordlist EFF: {args}')
     eff()
+elif args.decrypt:
+    decrypt_qrcode()
 else:
     print('No argument')
     
