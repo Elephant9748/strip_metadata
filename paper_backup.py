@@ -251,7 +251,7 @@ def _clear():
     
 
 # hash qrcode check
-def hash_qrcode(target):
+def hash_qrcode(target, ask_hash):
     target.pop(-1)
     target.pop(-1)
     str = ''
@@ -268,7 +268,8 @@ def hash_qrcode(target):
 
     # long hash
     long_hash = hash_qrcode.hexdigest()
-    print(Fore.RESET+ Back.RESET+ f'Long sha256: {long_hash}')
+    time.sleep(0.2)
+    print(Fore.RESET+ Back.RESET+ f'\nLong sha256: {long_hash}')
     # short has
     short_str = ''
     for i in range(0, len(long_hash) - 1):
@@ -276,6 +277,15 @@ def hash_qrcode(target):
         if i == 21:
             break;
     print(f'Short sha256: {short_str}')
+    
+    # compare hash 
+    if ask_hash == 'q' or ask_hash == 'Q':
+        print(Fore.RED+Back.RESET+ '\nskip _nothing to compare hash.')
+    elif short_str == ask_hash:
+        print(Fore.GREEN+ '\nCompare: True')
+        print(f'Hash: {short_str}\nPrev Hash: {ask_hash}')
+    else:
+        print(Fore.RED+ '\nCompare: False')
     
 # shred file decrypt qrcode
 def shred_cache_qrcode():
@@ -373,8 +383,18 @@ def decrypt_qrcode():
        
     decrypt_qrcode_gpg()
     # hash qrcode (just get the hash, manual checking)
-    hash_qrcode(get_gpg)
-    print(Fore.BLUE+ Back.RESET+ 'decrypt succeed.')
+    _wait = 0
+    while _wait != 1:
+        ask_hash = str(input(Fore.RESET+Back.RESET +'Input prev hash or [q/Q] to skip: '))
+        if ask_hash == '':
+            _wait = 0
+        elif ask_hash == 'q' or ask_hash == 'Q':
+            _wait = 1
+        else:
+            _wait = 1
+            
+    hash_qrcode(get_gpg, ask_hash)
+    print(Fore.BLUE+ Back.RESET+ '\ndecrypt succeed.')
     # shred file
     time.sleep(0.5)
     shred_cache_qrcode()
