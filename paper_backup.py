@@ -1,14 +1,3 @@
-# mnemonic bip39 and validate
-
-# show phasephrase
-
-# encrypt phasephrase gpg
-# ```
-# gpg --batch --passphrase-fd 3 --s2k-mode 3 --s2k-count 65011712 --s2k-digest-algo sha512 --cipher-algo AES256 --symmetric --armor 3<<<'$passphrase'
-# ```
-
-# openssl dgst -sha512
-
 import argparse
 import time
 import subprocess
@@ -211,6 +200,7 @@ def qr_code():
     # climage
     out_image = climage.convert(f'qrcode/{long_hashing}-{current_time}-{name_image}.png', is_unicode=True, is_truecolor=False, is_256color=True, is_16color=False, is_8color=False, width=80, palette="default")
     
+    print('\n')
     print(out_image)
     print(Fore.YELLOW+ f'\nImage Path: qrcode/{long_hashing}-{current_time}-{name_image}.png')
     print(Fore.GREEN+ 'qr_code_hash succeed.')
@@ -218,6 +208,10 @@ def qr_code():
 
 def gpg_encrypt(passphrase):
     print(Fore.YELLOW+ 'encrypting passphare')
+    for i in range(0, 5):
+        time.sleep(0.5)
+        print('****', end='', flush=True)
+        
     cmd = ['gpg']
     cmd.append('-o')
     cmd.append('secret.gpg')
@@ -234,10 +228,6 @@ def gpg_encrypt(passphrase):
     cmd.append('frost')
     cmd_run = subprocess.Popen(cmd, stdout = subprocess.PIPE)
     cmd_str = str(cmd_run.communicate())
-    
-    for i in range(0, 5):
-        time.sleep(0.5)
-        print('****', end='', flush=True)
         
     print(Fore.YELLOW+ f'\n{cmd_str}')
     
@@ -389,13 +379,64 @@ def decrypt_qrcode():
     time.sleep(0.5)
     shred_cache_qrcode()
     
+# encrypt text arguemtn --encrypt
+def _encrypt_string(env_string):
+    print(Fore.BLUE+ '\n*encrypt string/text,file')
+    print(Fore.RESET)
+    for i in range(0, 5):
+        time.sleep(0.5)
+        print('****', end='', flush=True)
+    
+    # store text to frost
+    store_passphrase(env_string)
+    time.sleep(0.5)
+    
+    # gpg encrypt    
+    terminal_list = ['gpg',
+                     '-o',
+                     'secret.gpg',
+                     '--symmetric',
+                     '--s2k-mode',
+                     '3',
+                     '--s2k-count',
+                     '65011712',
+                     '--s2k-digest-algo',
+                     'SHA512',
+                     '--cipher-algo',
+                     'AES256',
+                     '--armor',
+                     'frost']
+    terminal_sub = subprocess.Popen(terminal_list, stdout = subprocess.PIPE)
+    terminal_str = str(terminal_sub.communicate())
+    
+    # indicate encrypt succeed
+    print(Fore.YELLOW+ f'\n{terminal_str}')
+    
+    _read = open('secret.gpg','r')
+    _lines = _read.readlines()
+    print(Fore.GREEN)
+    try:
+        for line in _lines:
+            print(line, end='', flush=True)
+    except:
+            print('ERROR open secret.pgp')
+    finally:
+            hash_me(_lines)
+            print(Fore.BLUE+ '\ngpg_encrypt string succeed\n')
+            _read.close()
+    time.sleep(0.5)
+    shred_cache()
+    qr_code()
+    qr_code_short_hash()
+    
 # Initialize parser
-parser = argparse.ArgumentParser()
+parser = argparse.ArgumentParser(description = 'Paper backup -> ascii img')
  
 # Adding optional argument
-parser.add_argument('-B', '--BIP39', action='store_true', help = 'Wordlist Mnemonic BIP 39')
-parser.add_argument('-E', '--EFF', action='store_true', help = 'Wordlist passphraseme')
-parser.add_argument('-D', '--decrypt', action='store_true', help = 'Decrypt qrcode, etc')
+parser.add_argument('-bip', '--BIP39', action='store_true', help = 'Encrypt Passphrase Wordlist Mnemonic BIP 39')
+parser.add_argument('-eff', '--EFF', action='store_true', help = 'Encrypt passphrase Wordlist passphraseme')
+parser.add_argument('-e', '--encrypt', default='', dest='encrypt', help='Encrypt text to AES256: *.py -e \'[string]\'', type=str)
+parser.add_argument('-d', '--decrypt', action='store_true', help = 'Decrypt qrcode, etc')
  
 # Read arguments from command line
 args = parser.parse_args()
@@ -408,10 +449,22 @@ elif args.EFF:
     eff()
 elif args.decrypt:
     decrypt_qrcode()
+elif args.encrypt:
+    # print(Fore.GREEN+ f'{args.encrypt}')
+    _text_input = str(args.encrypt)
+    _encrypt_string(_text_input)
 else:
     print('No argument')
     
 
 
-            
-    
+# mnemonic bip39 and validate
+
+# show phasephrase
+
+# encrypt phasephrase gpg
+# ```
+# gpg --batch --passphrase-fd 3 --s2k-mode 3 --s2k-count 65011712 --s2k-digest-algo sha512 --cipher-algo AES256 --symmetric --armor 3<<<'$passphrase'
+# ```
+
+# openssl dgst -sha512
