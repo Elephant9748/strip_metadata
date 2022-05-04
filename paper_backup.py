@@ -23,6 +23,16 @@ def bip39():
     _clear()
     validate_phrase(words)
     
+    # store to file
+    store_passphrase(words)
+    time.sleep(0.5)
+    # encrypt 
+    gpg_encrypt(words)
+    time.sleep(0.5)
+    # shred
+    shred_cache()
+    qr_code()
+    qr_code_short_hash()
     
     for line in words:
         if not mnemo.check(line):
@@ -282,10 +292,10 @@ def hash_qrcode(target, ask_hash):
     if ask_hash == 'q' or ask_hash == 'Q':
         print(Fore.RED+Back.RESET+ '\nskip _nothing to compare hash.')
     elif short_str == ask_hash:
-        print(Fore.GREEN+ '\nCompare: True')
+        print(Fore.GREEN+ '\nCompare Hash: True')
         print(f'Hash: {short_str}\nPrev Hash: {ask_hash}')
     else:
-        print(Fore.RED+ '\nCompare: False')
+        print(Fore.RED+ '\nCompare Hash: False')
     
 # shred file decrypt qrcode
 def shred_cache_qrcode():
