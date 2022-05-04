@@ -278,7 +278,7 @@ def hash_qrcode(target):
 
     # long hash
     long_hash = hash_qrcode.hexdigest()
-    print(Fore.RESET+ f'\nLong sha256: {long_hash}')
+    print(Fore.RESET+ Back.RESET+ f'Long sha256: {long_hash}')
     # short has
     short_str = ''
     for i in range(0, len(long_hash) - 1):
@@ -286,24 +286,108 @@ def hash_qrcode(target):
         if i == 21:
             break;
     print(f'Short sha256: {short_str}')
+    
+# shred file decrypt qrcode
+def shred_cache_qrcode():
+    try:
+        # shred forst
+        print(Fore.BLUE+ Back.RESET+ '\nShred unnecessary file from qrcode function')
+        print(Fore.RED)
+        shred = ['shred','-vuz','-n','10','qrcode_decode.gpg']
+        shred_run = subprocess.Popen(shred, stdout = subprocess.PIPE)
+        shred_stdin = str(shred_run.communicate())
+        print(Fore.YELLOW+ f'{shred_stdin}')
+        
+    except:
+        print(Fore.RED+ 'Shred ERROR')
+    finally:
+        print(Fore.GREEN+ 'Shred succeed')
+    
+# decrypt qrcode gpg
+def decrypt_qrcode_gpg():
+    qrcode_gpg_list = ['gpg','--decrypt','qrcode_decode.gpg']
+    qrcode_gpg_sub = subprocess.Popen(qrcode_gpg_list, stdout = subprocess.PIPE)
+    qrcode_gpg_str = str(qrcode_gpg_sub.communicate())
+    
+    passphrase_Q = qrcode_gpg_str.replace('(b\'','').replace('\', None)','')
+    
+    pending = 0
+    while pending != 1:
+        qna = input(Fore.RESET+ '\nshow passphrase [y/n]? ')
+        if qna == 'y' or qna == 'Y':
+            print(Back.WHITE+Fore.BLACK+ f'\n{passphrase_Q}\n')
+            pending = 1
+        elif qna == 'n' or qna == 'N':
+            print(Fore.RED+ '\nnope im hide.\n')
+            pending = 1
+        else:
+            pending = 0
+            
 
 # decrypt qrcode
 def decrypt_qrcode():
+    # clear screen
+    _clear()
     
-    trg_img = 'qrcode/34767856b852770f29baab-2022-05-04-eagle.png'
+    # get list of qrcode
+    ls_list = ['ls','qrcode']
+    ls_sub = subprocess.Popen(ls_list, stdout = subprocess.PIPE)
+    ls_str = str(ls_sub.communicate())
+    ls_str_format = ls_str.replace('(b\'','').replace('\', None)','').split('\\n')
+    print('\nls qrcode')
+    print('---------')
+    for line in range(0, len(ls_str_format) - 1):
+        print(Fore.CYAN+ f'{line}. {ls_str_format[line]}')
+    wait = 0 
+    while wait != 1:
+        Q = str(input(Fore.RESET+ f'\nchose file name by index or name: '))
+        if Q == '':
+            wait = 0
+        else:
+            wait = 1
+
+    if Q.isnumeric():
+        trg_Q = ls_str_format[int(Q)]
+    else:
+        # check Q is on list 
+        for line in ls_str_format:
+            if line == Q:
+                trg_Q = Q
+                break
+            else:
+                print(Fore.RED+ 'Error check Q list none numeric.\n')
+                break
+    
+    trg_img = f'qrcode/{trg_Q}'
     zbarimg_cmd = ['zbarimg','--nodisplay','--nodbus','--quiet',f'{trg_img}']
     zbarimg_sub = subprocess.Popen(zbarimg_cmd, stdout = subprocess.PIPE)
     zbarimg_str = str(zbarimg_sub.communicate())
     get_gpg = zbarimg_str.replace('(b\'QR-Code:','').replace('\', None)','').split('\\n')
     
-    check = len(get_gpg) - 2
-    for line in range(0, len(get_gpg) - 1):
-        print(Fore.GREEN+ f'{get_gpg[line]}')
-        if line == check:
-            break
-        
+    # print out gpg & write to file
+    file_open = open('qrcode_decode.gpg', 'w')
+    try:
+        print(Fore.BLUE+ '\n*get pgp\n')
+        check = len(get_gpg) - 2
+        for line in range(0, len(get_gpg) - 1):
+            # print line
+            print(Fore.GREEN+ f'{get_gpg[line]}')
+            # write line to file
+            file_open.write(f'{get_gpg[line]}\n')
+            if line == check:
+                break
+    except:
+        print(Fore.RED+ 'ERROR decrypt pgp')
+    finally:
+        file_open.close()
+       
+    decrypt_qrcode_gpg()
     # hash qrcode (just get the hash, manual checking)
     hash_qrcode(get_gpg)
+    print(Fore.BLUE+ Back.RESET+ 'decrypt succeed.')
+    # shred file
+    time.sleep(0.5)
+    shred_cache_qrcode()
     
 # Initialize parser
 parser = argparse.ArgumentParser()

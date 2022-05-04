@@ -1,5 +1,7 @@
 #!/bin/bash
 
+# require latest gnupg
+
 mkdir img
 mkdir img/ori
 mkdir ori-BK
