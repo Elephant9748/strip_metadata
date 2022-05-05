@@ -325,10 +325,10 @@ def decrypt_qrcode_gpg():
     while pending != 1:
         qna = input(Fore.RESET+ '\nshow passphrase [y/n]? ')
         if qna == 'y' or qna == 'Y':
-            print(Back.WHITE+Fore.BLACK+ f'\n{passphrase_Q}\n')
+            print(Fore.GREEN+ f'show: ' +Back.WHITE+Fore.BLACK+ f'{passphrase_Q}' +Back.RESET)
             pending = 1
         elif qna == 'n' or qna == 'N':
-            print(Fore.RED+ '\nnope im hide.\n')
+            print(Fore.GREEN+ f'show: '+ Fore.RED+Back.WHITE+ 'nope im hide.'+Back.RESET)
             pending = 1
         else:
             pending = 0
@@ -367,7 +367,7 @@ def decrypt_qrcode():
             else:
                 print(Fore.RED+ 'Error check Q list none numeric.\n')
                 break
-    
+            
     trg_img = f'qrcode/{trg_Q}'
     zbarimg_cmd = ['zbarimg','--nodisplay','--nodbus','--quiet',f'{trg_img}']
     zbarimg_sub = subprocess.Popen(zbarimg_cmd, stdout = subprocess.PIPE)
@@ -377,7 +377,11 @@ def decrypt_qrcode():
     # print out gpg & write to file
     file_open = open('qrcode_decode.gpg', 'w')
     try:
-        print(Fore.BLUE+ '\n*get pgp\n')
+        print(Fore.BLUE+ '\n*scanning qrcode')
+        for i in range(0,5):
+            time.sleep(0.5)
+            print('***', end='', flush=True)
+        print('\n')
         check = len(get_gpg) - 2
         for line in range(0, len(get_gpg) - 1):
             # print line
@@ -390,8 +394,7 @@ def decrypt_qrcode():
         print(Fore.RED+ 'ERROR decrypt pgp')
     finally:
         file_open.close()
-       
-    decrypt_qrcode_gpg()
+    
     # hash qrcode (just get the hash, manual checking)
     _wait = 0
     while _wait != 1:
@@ -404,7 +407,12 @@ def decrypt_qrcode():
             _wait = 1
             
     hash_qrcode(get_gpg, ask_hash)
+    
+    # decrypt_qrcode
+    print('\n')
+    decrypt_qrcode_gpg()
     print(Fore.BLUE+ Back.RESET+ '\ndecrypt succeed.')
+    
     # shred file
     time.sleep(0.5)
     shred_cache_qrcode()
