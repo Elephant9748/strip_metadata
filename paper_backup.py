@@ -291,7 +291,7 @@ def hash_qrcode(target, ask_hash):
     # compare hash 
     if ask_hash == 'q' or ask_hash == 'Q':
         print(Fore.RED+Back.RESET+ '\nskip _nothing to compare hash.')
-    elif short_str == ask_hash:
+    elif short_str == ask_hash or long_hash == ask_hash:
         print(Fore.GREEN+ '\nCompare Hash: True')
         print(f'Hash: {short_str}\nPrev Hash: {ask_hash}')
     else:
@@ -494,8 +494,8 @@ elif args.encrypt:
 else:
     print('No argument')
     
-
-
+    
+    
 # mnemonic bip39 and validate
 
 # show phasephrase
