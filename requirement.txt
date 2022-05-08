@@ -6,3 +6,5 @@ argparse
 climage
 passphraseme
 datetime
+urllib
+base64

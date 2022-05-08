@@ -1,5 +1,6 @@
 import argparse
 import time
+import base64
 import subprocess
 import os
 import hashlib
@@ -467,15 +468,210 @@ def _encrypt_string(env_string):
     qr_code()
     qr_code_short_hash()
     
+    
+# Mini conversion tools
+def _convert_text_to_all(args):
+    print(Fore.YELLOW+'\nI Have No Idea What These Is.\n')
+    pick = int(input(Fore.RESET+'1. Text-Base64-ROT13\n2. ROT13-Base64-Text\n3. Develope only [Testing]\n\nchose: '))
+    
+    binary = _tobinary(args)
+    dec = _todecimal(binary)
+    hex = _tohex(dec)
+    base64 = _encode_base64(args)
+    encrypt_rot13 = _ROTCipher('encrypt', args, 13)
+    vigenre = _vigenre_cipher(args)
+    
+    if pick == 1:
+        tbr = _ROTCipher('encrypt', base64, 13)
+        print('|')
+        print(f'|_{base64}')
+        print('|_Text-Base64-ROT13: '+Fore.BLACK+Back.WHITE+ f'{tbr}' + Back.RESET+Fore.RESET)
+        
+    elif pick == 2:
+        rbt = _ROTCipher('decrypt', args, 13)
+        rbt_text = _decode_base64(rbt)
+        print('|')
+        print(f'|_{rbt}')
+        print('|_ROT13-Base64-Text: '+Fore.BLACK+Back.WHITE+ f'{rbt_text}' + Back.RESET+Fore.RESET)
+    elif pick == 3:
+        
+        
+        print('|')
+        print('|________text: '+Fore.BLACK+Back.WHITE+ f'{args}' + Back.RESET+Fore.RESET)
+        print('|')
+        print('|______binary: '+Fore.BLACK+Back.WHITE+ f'{binary}' + Back.RESET+Fore.RESET)
+        print('|')
+        print('|_____decimal: '+Fore.BLACK+Back.WHITE+ f'{dec}' + Back.RESET+Fore.RESET)
+        print('|')
+        print('|_hexadecimal: '+Fore.BLACK+Back.WHITE+ f'{hex}' + Back.RESET+Fore.RESET)
+        print('|')
+        print('|______base64: '+Fore.BLACK+Back.WHITE+ f'{base64}' + Back.RESET+Fore.RESET)
+        print('|')
+        print('|_______ROT13: '+Fore.BLACK+Back.WHITE+ f'{encrypt_rot13}' + Back.RESET+Fore.RESET)
+        print('|')
+        print('|_____vigenre: '+Fore.BLACK+Back.WHITE+ f'{vigenre}' + Back.RESET+Fore.RESET)
+
+# text to binary    
+def _tobinary(text):
+    if not text:
+        return Fore.RED+ 'variable _tobinary() : false'
+    text_str = str(text)
+    result = ''.join(format(i, '08b') for i in bytearray(text_str, encoding ='utf-8'))
+    
+    return str(result)
+
+# text to decimal
+def _todecimal(_binary):
+    _dec = int(_binary, 2)
+    return _dec
+
+# dec to hex
+def _tohex(dec):
+    _dec_int = int(dec)
+    _hex_str = str(hex(_dec_int))
+    return _hex_str
+
+# text to encode base64
+def _encode_base64(text):
+    _str_bytes = text.encode('ascii')
+    _base64 = base64.b64encode(_str_bytes)
+    _base64_str = _base64.decode('ascii')
+    return _base64_str
+
+# decode base64 to text
+def _decode_base64(text):
+    _str_bytes = text.encode('ascii')
+    _base64 = base64.b64decode(_str_bytes)
+    _base64_str = _base64.decode('ascii')
+    return _base64_str
+
+# text to ROT13
+def _ROTCipher(action, text, shift):
+    _strUpper = text.upper()
+    # Dictionary to lookup the index of alphabets
+    dict1 = {'A' : 1, 'B' : 2, 'C' : 3, 'D' : 4, 'E' : 5,
+            'F' : 6, 'G' : 7, 'H' : 8, 'I' : 9, 'J' : 10,
+            'K' : 11, 'L' : 12, 'M' : 13, 'N' : 14, 'O' : 15,
+            'P' : 16, 'Q' : 17, 'R' : 18, 'S' : 19, 'T' : 20,
+            'U' : 21, 'V' : 22, 'W' : 23, 'X' : 24, 'Y' : 25, 'Z' : 26}
+    
+    # Dictionary to lookup alphabets
+    # corresponding to the index after shift
+    dict2 = {0 : 'Z', 1 : 'A', 2 : 'B', 3 : 'C', 4 : 'D', 5 : 'E',
+            6 : 'F', 7 : 'G', 8 : 'H', 9 : 'I', 10 : 'J',
+            11 : 'K', 12 : 'L', 13 : 'M', 14 : 'N', 15 : 'O',
+            16 : 'P', 17 : 'Q', 18 : 'R', 19 : 'S', 20 : 'T',
+            21 : 'U', 22 : 'V', 23 : 'W', 24 : 'X', 25 : 'Y'}
+    
+    if action == 'encrypt':
+        cipher = ''
+        for index in range(0, len(_strUpper)):
+            if _strUpper[index] in dict1:
+                # checking for space
+                if _strUpper[index] != ' ':
+                    # looks up the dictionary and
+                    # adds the shift to the index
+                    num = ( dict1[_strUpper[index]] + shift ) % 26
+                    # looks up the second dictionary for
+                    # the shifted alphabets and adds them
+                    # check capital letter
+                    if text[index].isupper():
+                        cipher += dict2[num].upper()
+                    else:
+                        cipher += dict2[num].lower()
+                else:
+                    # adds space
+                    cipher += ' '
+            else:
+                cipher += text[index]
+             
+        return cipher
+    
+    elif action == 'decrypt':
+        decipher = ''
+        for index in range(0, len(_strUpper)):
+            if _strUpper[index] in dict1:
+                # checks for space
+                if(_strUpper[index] != ' '):
+                    # looks up the dictionary and
+                    # subtracts the shift to the index
+                    num = ( dict1[_strUpper[index]] - shift + 26) % 26
+                    # looks up the second dictionary for the
+                    # shifted alphabets and adds them
+                    if text[index].isupper():
+                        decipher += dict2[num].upper()
+                    else:
+                        decipher += dict2[num].lower()
+                else:
+                    # adds space
+                    decipher += ' '
+            else:
+                decipher += text[index]
+    
+        return decipher
+    else:
+        return Fore.RED+ 'NO ACTION ROT13'
+        
+# Vigenère cipher
+def _vigenre_cipher(text):
+    # Python code to implement
+    # Vigenere Cipher
+    
+    # This function generates the
+    # key in a cyclic manner until
+    # it's length isn't equal to
+    # the length of original text
+    def generateKey(string, key):
+        key = list(key)
+        if len(string) == len(key):
+            return(key)
+        else:
+            for i in range(len(string) -
+                        len(key)):
+                key.append(key[i % len(key)])
+        return("" . join(key))
+        
+    # This function returns the
+    # encrypted text generated
+    # with the help of the key
+    def cipherText(string, key):
+        cipher_text = []
+        for i in range(len(string)):
+            x = (ord(string[i]) +
+                ord(key[i])) % 26
+            x += ord('A')
+            cipher_text.append(chr(x))
+        return("" . join(cipher_text))
+        
+    # This function decrypts the
+    # encrypted text and returns
+    # the original text
+    def originalText(cipher_text, key):
+        orig_text = []
+        for i in range(len(cipher_text)):
+            x = (ord(cipher_text[i]) -
+                ord(key[i]) + 26) % 26
+            x += ord('A')
+            orig_text.append(chr(x))
+        return("" . join(orig_text))
+    
+    keyword  = 'NOWnothingfinderPersonPlaNet'
+    key = generateKey(text, keyword)
+    cipher_text = cipherText(text, key)
+    _cipherText = str(cipher_text)
+    return _cipherText +' and ->'+str(originalText(_cipherText, key))
+        
+        
 # Initialize parser
 parser = argparse.ArgumentParser(description = 'Paper backup -> ascii img')
  
 # Adding optional argument
-parser.add_argument('-bip', '--BIP39', action='store_true', help = 'Encrypt Passphrase Wordlist Mnemonic BIP 39')
+parser.add_argument('-bip39', '--BIP39', action='store_true', help = 'Encrypt Passphrase Wordlist Mnemonic BIP 39')
 parser.add_argument('-eff', '--EFF', action='store_true', help = 'Encrypt passphrase Wordlist passphraseme')
 parser.add_argument('-e', '--encrypt', default='', dest='encrypt', help='Encrypt text to AES256: *.py -e \'[string]\'', type=str)
 parser.add_argument('-d', '--decrypt', action='store_true', help = 'Decrypt qrcode, etc')
- 
+parser.add_argument('-cvt','--convert', default='', dest='convert', help='Mini Conversion Tools')
+
 # Read arguments from command line
 args = parser.parse_args()
 
@@ -491,6 +687,9 @@ elif args.encrypt:
     # print(Fore.GREEN+ f'{args.encrypt}')
     _text_input = str(args.encrypt)
     _encrypt_string(_text_input)
+elif args.convert:
+    # print(Fore.RED+ f'\nMini Conversion Tools\nGet String: {args.convert}')
+    _convert_text_to_all(args.convert)
 else:
     print('No argument')
     
