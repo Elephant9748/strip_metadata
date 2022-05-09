@@ -367,7 +367,8 @@ def decrypt_qrcode():
                 break
             else:
                 print(Fore.RED+ 'Error check Q list none numeric.\n')
-                break
+                # break
+                quit()
             
     trg_img = f'qrcode/{trg_Q}'
     zbarimg_cmd = ['zbarimg','--nodisplay','--nodbus','--quiet',f'{trg_img}']
@@ -396,19 +397,27 @@ def decrypt_qrcode():
     finally:
         file_open.close()
     
-    # hash qrcode (just get the hash, manual checking)
-    _wait = 0
-    while _wait != 1:
-        ask_hash = str(input(Fore.RESET+Back.RESET +'Input prev hash or [q/Q] to skip: '))
-        if ask_hash == '':
-            _wait = 0
-        elif ask_hash == 'q' or ask_hash == 'Q':
-            _wait = 1
-        else:
-            _wait = 1
-            
-    hash_qrcode(get_gpg, ask_hash)
+    # # hash qrcode (just get the hash, manual checking)
+    # _wait = 0
+    # while _wait != 1:
+    #     ask_hash = str(input(Fore.RESET+Back.RESET +'Input prev hash or [q/Q] to skip: '))
+    #     if ask_hash == '':
+    #         _wait = 0
+    #     elif ask_hash == 'q' or ask_hash == 'Q':
+    #         _wait = 1
+    #     else:
+    #         _wait = 1
     
+    # hash_qrcode(get_gpg, ask_hash)
+    
+    
+    # hash qrcode (just get the hash, auto checking)
+    if trg_Q:
+        name_qrcode = trg_Q.split('-')
+        hash_qrcode(get_gpg, name_qrcode[0])
+    else:
+        print(Fore.RED+ 'ERROR trg_Q not found for comprase hash')
+        
     # decrypt_qrcode
     print('\n')
     decrypt_qrcode_gpg()
@@ -494,8 +503,6 @@ def _convert_text_to_all(args):
         print(f'|_{rbt}')
         print('|_ROT13-Base64-Text: '+Fore.BLACK+Back.WHITE+ f'{rbt_text}' + Back.RESET+Fore.RESET)
     elif pick == 3:
-        
-        
         print('|')
         print('|________text: '+Fore.BLACK+Back.WHITE+ f'{args}' + Back.RESET+Fore.RESET)
         print('|')
