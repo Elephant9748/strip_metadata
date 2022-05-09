@@ -366,9 +366,9 @@ def decrypt_qrcode():
                 trg_Q = Q
                 break
             else:
-                print(Fore.RED+ 'Error check Q list none numeric.\n')
-                # break
-                quit()
+                print(Fore.RED+ '\nError check Q list none numeric.\n')
+                break
+                
             
     trg_img = f'qrcode/{trg_Q}'
     zbarimg_cmd = ['zbarimg','--nodisplay','--nodbus','--quiet',f'{trg_img}']
@@ -416,7 +416,7 @@ def decrypt_qrcode():
         name_qrcode = trg_Q.split('-')
         hash_qrcode(get_gpg, name_qrcode[0])
     else:
-        print(Fore.RED+ 'ERROR trg_Q not found for comprase hash')
+        print(Fore.RED+ 'ERROR trg_Q not found for comparing hash')
         
     # decrypt_qrcode
     print('\n')
