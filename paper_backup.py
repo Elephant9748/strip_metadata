@@ -500,7 +500,8 @@ def _convert_text_to_all(args):
         rbt = _ROTCipher('decrypt', args, 13)
         rbt_text = _decode_base64(rbt)
         print('|')
-        print(f'|_{rbt}')
+        print(f'|_String Input: '+Fore.BLACK+Back.WHITE+ f'{rbt}'+ Fore.RESET+ Back.RESET)
+        print('|')
         print('|_ROT13-Base64-Text: '+Fore.BLACK+Back.WHITE+ f'{rbt_text}' + Back.RESET+Fore.RESET)
     elif pick == 3:
         print('|')
@@ -677,7 +678,7 @@ parser.add_argument('-bip39', '--BIP39', action='store_true', help = 'Encrypt Pa
 parser.add_argument('-eff', '--EFF', action='store_true', help = 'Encrypt passphrase Wordlist passphraseme')
 parser.add_argument('-e', '--encrypt', default='', dest='encrypt', help='Encrypt text to AES256: *.py -e \'[string]\'', type=str)
 parser.add_argument('-d', '--decrypt', action='store_true', help = 'Decrypt qrcode, etc')
-parser.add_argument('-cvt','--convert', default='', dest='convert', help='Mini Conversion Tools')
+parser.add_argument('-cvt','--convert', action='store_true', help='Mini Conversion Tools')
 
 # Read arguments from command line
 args = parser.parse_args()
@@ -695,8 +696,9 @@ elif args.encrypt:
     _text_input = str(args.encrypt)
     _encrypt_string(_text_input)
 elif args.convert:
-    # print(Fore.RED+ f'\nMini Conversion Tools\nGet String: {args.convert}')
-    _convert_text_to_all(args.convert)
+    _arg_str = str(input(Fore.GREEN+ '\nInput String: '))
+    print('\n')
+    _convert_text_to_all(_arg_str)
 else:
     print('No argument')
     
