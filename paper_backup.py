@@ -715,8 +715,26 @@ elif args.encrypt:
     _text_input = str(args.encrypt)
     _encrypt_string(_text_input)
 elif args.convert:
-    _arg_str = str(input(Fore.GREEN+ '\nInput String: '))
-    print('\n')
+    _arg_str = ''
+    # input string or read from file
+    select = int(input(Fore.CYAN+ '\n1. Input String.\n2. Read From File.\n\nselect: '))
+    if select == 1:
+        _arg_str = str(input(Fore.GREEN+ '\nInput String: '))
+    elif select == 2:
+        _r_file = str(input(Fore.GREEN+ '\nWhere File Located?: '))
+        _r = open(f'{_r_file}','r')
+        try:
+            _r_lines = _r.readlines()
+            for line in _r_lines:
+                _arg_str += line
+        except:
+            print(Fore.RED+ 'ERROR Read file')
+        finally:
+            _r.close()
+    else:
+        print(Fore.RED+ 'Select Not Valid.')
+        quit()
+        
     _convert_text_to_all(_arg_str)
 else:
     print('No argument')
