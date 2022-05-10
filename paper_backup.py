@@ -17,12 +17,12 @@ from colorama import Fore, Back
 def bip39():
     mnemo = Mnemonic('english')
     words = mnemo.generate(strength=256)
-    print(f'Show BIP39 Mnemonic: '+ Fore.BLACK + Back.WHITE + f'{words}')
-    print(Fore.GREEN+ '>>'+ Fore.RESET+ Back.RESET)
+    print(f'Show BIP39 Mnemonic: '+ Fore.BLACK + Back.WHITE +f'{words}'+''+Back.RESET)
+    input(Fore.WHITE+ f'\n- Press enter to continue? ')
     
     # add here prompt input passphrase
     _clear()
-    validate_phrase(words)
+    validate_phrase(words, 'bip39')
     
     # store to file
     store_passphrase(words)
@@ -31,9 +31,9 @@ def bip39():
     gpg_encrypt(words)
     time.sleep(0.5)
     # shred
-    shred_cache()
     qr_code()
     qr_code_short_hash()
+    shred_cache()
     
     for line in words:
         if not mnemo.check(line):
@@ -67,17 +67,17 @@ def eff():
     
     # add here clear history or screen
     _clear()
-    validate_phrase(wordlist_trim)
+    validate_phrase(wordlist_trim, 'EFF')
     store_passphrase(wordlist_trim)
     time.sleep(0.5)
     gpg_encrypt(wordlist_trim)
     time.sleep(0.5)
-    shred_cache()
     qr_code()
     qr_code_short_hash()
+    shred_cache()
     
 #Validate passphrase
-def validate_phrase(passphrase):
+def validate_phrase(passphrase, name):
     print(Back.RESET+Fore.CYAN+ '- to show prev passphrase [q]')
     validate = input(Fore.RESET+ 'type passhrase again here to validate: ')
     
@@ -85,12 +85,12 @@ def validate_phrase(passphrase):
         print(Fore.GREEN+ '- Passphrase Valid...')
     elif validate == 'q' or validate == 'Q':
         _clear()
-        print(f'Show EFF Passphrase: '+Back.WHITE+Fore.BLACK+ f'{passphrase}')
-        validate_phrase(passphrase)
+        print(f'Show {name} Passphrase: '+Back.WHITE+Fore.BLACK+ f'{passphrase}')
+        validate_phrase(passphrase, name)
     else:
         _clear()
         print(Fore.RED+ '- Passphrase Not validate...')
-        validate_phrase(passphrase)
+        validate_phrase(passphrase, name)
 
 # store phrase to file        
 def store_passphrase(pphrase):
@@ -106,19 +106,24 @@ def store_passphrase(pphrase):
 
 # shred unnecessary file     
 def shred_cache():
+    
+    # shred forst,  secret.gpg
+    print(Fore.BLUE+ '\nShred unnecessary file')
+    shred = ['shred','-uz','-n','10','frost', 'secret.gpg']
+    shred_run = subprocess.Popen(shred, stdout = subprocess.PIPE)
     try:
-        # shred forst
-        print(Fore.BLUE+ 'Shred unnecessary file')
-        print(Fore.RED)
-        shred = ['shred','-vuz','-n','10','frost', 'secret.gpg']
-        shred_run = subprocess.Popen(shred, stdout = subprocess.PIPE)
+        # wait 10 sec
+        for i in range (0, 5):
+            time.sleep(0.5)
+            print(Fore.RED+ '*****', end='', flush=True)
+            
+        # run subprocess
         shred_stdin = str(shred_run.communicate())
-        print(Fore.YELLOW+ f'{shred_stdin}')
-        
     except:
-        print(Fore.RED+ 'Shred ERROR')
+        print(Fore.RED+ '\nShred ERROR')
     finally:
-        print(Fore.GREEN+ 'Shred succeed')
+        shred_run.kill()
+        print(Fore.GREEN+ '\nShred succeed')
     
 # hash passphrase
 def hash_me(hash_target):
@@ -180,7 +185,7 @@ def qr_code():
     
     check = 0
     while check != 1:
-        name_image = str(input(f'\ngive name to image: '))
+        name_image = str(input(Fore.GREEN+ f'\ngive name to image: '))
         if name_image == '':
             check = 0
         else:
@@ -300,19 +305,23 @@ def hash_qrcode(target, ask_hash):
     
 # shred file decrypt qrcode
 def shred_cache_qrcode():
+    print(Fore.BLUE+ Back.RESET+ '\nShred unnecessary file from qrcode function')
+    # shred qrcode_decode.gpg
+    shred = ['shred','-uz','-n','10','qrcode_decode.gpg']
+    shred_run = subprocess.Popen(shred, stdout = subprocess.PIPE)
     try:
-        # shred forst
-        print(Fore.BLUE+ Back.RESET+ '\nShred unnecessary file from qrcode function')
-        print(Fore.RED)
-        shred = ['shred','-vuz','-n','10','qrcode_decode.gpg']
-        shred_run = subprocess.Popen(shred, stdout = subprocess.PIPE)
-        shred_stdin = str(shred_run.communicate())
-        print(Fore.YELLOW+ f'{shred_stdin}')
+        # wait 10 sec
+        for i in range (0, 5):
+            time.sleep(0.5)
+            print(Fore.RED+ '***********', end='', flush=True)
         
+        # run subprocess
+        shred_stdin = str(shred_run.communicate())
     except:
-        print(Fore.RED+ 'Shred ERROR')
+        print(Fore.RED+ '\nShred ERROR')
     finally:
-        print(Fore.GREEN+ 'Shred succeed')
+        shred_run.kill()
+        print(Fore.GREEN+ '\nShred succeed')
     
 # decrypt qrcode gpg
 def decrypt_qrcode_gpg():
@@ -326,7 +335,7 @@ def decrypt_qrcode_gpg():
     while pending != 1:
         qna = input(Fore.RESET+ '\nshow passphrase [y/n]? ')
         if qna == 'y' or qna == 'Y':
-            print(Fore.GREEN+ f'show: ' +Back.WHITE+Fore.BLACK+ f'{passphrase_Q}' +Back.RESET)
+            print(Fore.GREEN+ f'show: ' +Back.WHITE+Fore.BLACK+f'{passphrase_Q}'+''+Back.RESET)
             pending = 1
         elif qna == 'n' or qna == 'N':
             print(Fore.GREEN+ f'show: '+ Fore.RED+Back.WHITE+ 'nope im hide.'+Back.RESET)
@@ -337,11 +346,20 @@ def decrypt_qrcode_gpg():
 
 # decrypt qrcode
 def decrypt_qrcode():
+    
+    # get dir qrcode
+    ask_path_qrcode = str(input(Fore.GREEN+ f'\nInsert path location of qrcode\nas String with single quote \'\' \nexample: \'path/qrcode\'\nor press Enter to use default path?'+Fore.RESET+'\n\nInput: '))
+    
+    if ask_path_qrcode == '':
+        path_qrcode = 'qrcode'
+    else:
+        path_qrcode = ask_path_qrcode
+    
     # clear screen
     _clear()
     
     # get list of qrcode
-    ls_list = ['ls','qrcode']
+    ls_list = ['ls',f'{path_qrcode}']
     ls_sub = subprocess.Popen(ls_list, stdout = subprocess.PIPE)
     ls_str = str(ls_sub.communicate())
     ls_str_format = ls_str.replace('(b\'','').replace('\', None)','').split('\\n')
@@ -370,7 +388,7 @@ def decrypt_qrcode():
                 break
                 
             
-    trg_img = f'qrcode/{trg_Q}'
+    trg_img = f'{path_qrcode}/{trg_Q}'
     zbarimg_cmd = ['zbarimg','--nodisplay','--nodbus','--quiet',f'{trg_img}']
     zbarimg_sub = subprocess.Popen(zbarimg_cmd, stdout = subprocess.PIPE)
     zbarimg_str = str(zbarimg_sub.communicate())
@@ -470,12 +488,13 @@ def _encrypt_string(env_string):
             print('ERROR open secret.pgp')
     finally:
             hash_me(_lines)
-            print(Fore.BLUE+ '\ngpg_encrypt string succeed\n')
+            print(Fore.BLUE+ '\ngpg_encrypt string succeed')
             _read.close()
+            
     time.sleep(0.5)
-    shred_cache()
     qr_code()
     qr_code_short_hash()
+    shred_cache()
     
     
 # Mini conversion tools
