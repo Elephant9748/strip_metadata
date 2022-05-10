@@ -2,10 +2,9 @@
 
 # require latest gnupg
 
-mkdir img
-mkdir img/ori
-mkdir ori-BK
-mkdir out
+# sudo -p mkdir img
+mkdir -p img/ori
+mkdir -p img/out
 mkdir qrcode
 
 # require python3 and pip

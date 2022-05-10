@@ -8,3 +8,4 @@ passphraseme
 datetime
 urllib
 base64
+pyinstaller
