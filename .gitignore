@@ -13,6 +13,7 @@ img/ori-BK/*
 img/ori-Dev/*
 img/out/*
 qrcode/*
+pypi
 
 # file
 secret.gpg
