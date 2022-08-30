@@ -75,6 +75,36 @@ def eff():
     qr_code()
     qr_code_short_hash()
     shred_cache()
+
+
+
+def bip39_generate_only():
+    mnemo = Mnemonic('english')
+    words = mnemo.generate(strength=256)
+    print(f'Show BIP39 Mnemonic: '+ Fore.BLACK + Back.WHITE +f'{words}'+''+Back.RESET)
+    input(Fore.WHITE+ f'\n- Press Enter to quit ! ')
+    
+
+def eff_generate_only():
+    cmd = ['passphraseme']
+    option = input(Fore.RESET+ f'\n1. Use EFF\'s general large wordlist\n2. Use EFF\'s general short wordlist (default)\n3. Use EFF\'s short wordlist with unique prefixes\n\nchose: ')
+    cmd.append('-l' if option == '1' else '-s2' if option == '3' else '-s1')
+    entropy = input(Fore.RESET+ f'Bits of entropy/word: ')
+    cmd.append('10' if not entropy else str(entropy))
+    print(Fore.CYAN+ f'\n- cmd parse: {cmd}')
+    time.sleep(1)
+    for i in range(0, 8):
+        time.sleep(0.5)
+        if i == 7:
+            print(Fore.GREEN+ '---->',end='', flush=True)
+            break
+        print(Fore.GREEN+ '*****',end='', flush=True)
+    wordlist = subprocess.Popen(cmd, stdout = subprocess.PIPE)
+    wordlist_proc = str(wordlist.communicate())
+    wordlist_trim = wordlist_proc.replace('(b\'','').replace('\\n\', None)','')
+    print(Fore.GREEN+ f'\n\npassphraseme generate: {wordlist_trim}')
+    input(Fore.WHITE+ f'\n- Press ENTER to quit ! ')
+    
     
 #Validate passphrase
 def validate_phrase(passphrase, name):
@@ -698,7 +728,8 @@ parser.add_argument('-eff', '--EFF', action='store_true', help = 'Encrypt passph
 parser.add_argument('-e', '--encrypt', default='', dest='encrypt', help='Encrypt text to AES256: *.py -e \'[string]\'', type=str)
 parser.add_argument('-d', '--decrypt', action='store_true', help = 'Decrypt qrcode, etc')
 parser.add_argument('-cvt','--convert', action='store_true', help='Mini Conversion Tools')
-
+parser.add_argument('-gen-eff-only','--genEFFonly', action='store_true', help='Generate EFF only')
+parser.add_argument('-gen-bip39-only','--genBIP39only', action='store_true', help='Generate EFF only')
 # Read arguments from command line
 args = parser.parse_args()
 
@@ -736,6 +767,10 @@ elif args.convert:
         quit()
         
     _convert_text_to_all(_arg_str)
+elif args.genEFFonly:
+    eff_generate_only()
+elif args.genBIP39only:
+    bip39_generate_only()
 else:
     print('No argument')
     

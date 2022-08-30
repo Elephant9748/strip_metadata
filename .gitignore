@@ -21,6 +21,7 @@ bash-secret.gpg
 file
 frost
 blue
+.zsh_history
 
 # Distribution / packaging
 .Python
