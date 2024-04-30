@@ -9,3 +9,9 @@ datetime
 urllib
 base64
 pyinstaller
+setuptools-scm 
+toml 
+installer 
+build
+mnemonic
+colorama
